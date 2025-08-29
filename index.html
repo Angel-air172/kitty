@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AMOR</title>
+<style>
+  :root{
+    --rosa:#ff4fa3;
+    --rosa-oscuro:#d81b60;
+    --fondo:#ffe8f1;
+  }
+  body{
+    margin:0; font-family: system-ui, Arial, sans-serif; background: var(--fondo);
+    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;
+  }
+  .card{
+    background:#fff; border-radius:22px; box-shadow:0 12px 30px rgba(0,0,0,.08);
+    max-width:420px; width:100%; padding:26px 22px; text-align:center; position:relative;
+  }
+  h1{ margin:6px 0 2px; font-size:22px; color:#333; }
+  .sub{ color:#777; font-size:14px; margin-bottom:16px; }
+
+  .heart-wrap{ width: 260px; max-width: 80vw; margin: 8px auto 16px; cursor:pointer; user-select:none; }
+  svg{ width:100%; height:auto; display:block; }
+  .heart-outline{ fill:none; stroke:var(--rosa-oscuro); stroke-width:14; }
+  .heart-fill{ fill: url(#grad); transition: transform .35s ease; transform-origin:50% 100%; }
+  .fill-clip{ transform-box: fill-box; transform-origin: 50% 100%; }
+
+  .progress{
+    margin:6px auto 2px; font-weight:700; color:var(--rosa-oscuro);
+  }
+  .hint{ color:#999; font-size:12px; }
+
+  .couple{
+    margin-top:18px; position:relative; height:110px;
+  }
+  .half{
+    position:absolute; top:10px; width:48%; max-width:180px; aspect-ratio:1/1;
+    background:linear-gradient(#ffd0e5,#ff9ac6);
+    border:4px solid var(--rosa-oscuro); border-radius:28px 28px 28px 0;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    transition: transform .35s ease;
+  }
+  .half.right{
+    right:0; border-radius:28px 28px 0 28px; transform: translateX(40%);
+  }
+  .half.left{
+    left:0; transform: translateX(-40%);
+  }
+  .half img{
+    max-width:80%; max-height:80%; object-fit:contain; display:block;
+  }
+  .join-line{
+    position:absolute; left:50%; top:58%; width:4px; height:0;
+    background:var(--rosa-oscuro); transform:translateX(-50%);
+    transition: height .35s ease;
+  }
+
+  .complete .heart-wrap{ animation: pop .5s ease; }
+  .complete .join-line{ height:50px; }
+  @keyframes pop{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.06); }
+    100%{ transform:scale(1); }
+  }
+
+  .btn{
+    margin-top:14px; background:linear-gradient(180deg, #ff6fb0, var(--rosa-oscuro));
+    color:#fff; border:none; padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer;
+  }
+  .btn:active{ transform: translateY(1px); }
+
+  /* Pop-up romántico */
+  .popup{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(255, 255, 255, 0.95);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:22px; padding:20px; box-sizing:border-box;
+    opacity:0; pointer-events:none; transition: opacity .35s ease;
+  }
+  .popup.show{
+    opacity:1; pointer-events:auto;
+  }
+  .popup img{ max-width:120px; margin-bottom:12px; }
+  .popup p{ color:var(--rosa-oscuro); font-size:16px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h1>Te amo Chaparrita linda 💗</h1>
+    <div class="sub">Toca el corazón para llenarlo</div>
+
+    <div class="heart-wrap" id="heartBtn" title="Haz clic para llenar">
+      <svg viewBox="0 0 200 180" aria-hidden="true">
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffa7cf"/>
+            <stop offset="100%" stop-color="#ff4fa3"/>
+          </linearGradient>
+          <clipPath id="heartClip">
+            <path d="M100 170
+                     C 20 110, 10 70, 35 45
+                     C 60 20, 95 28, 100 55
+                     C 105 28, 140 20, 165 45
+                     C 190 70, 180 110, 100 170 Z"/>
+          </clipPath>
+        </defs>
+
+        <g clip-path="url(#heartClip)">
+          <rect class="heart-fill fill-clip" id="fillRect" x="0" y="0" width="200" height="180"
+                style="transform: scaleY(0);"></rect>
+        </g>
+
+        <path class="heart-outline"
+              d="M100 170
+                 C 20 110, 10 70, 35 45
+                 C 60 20, 95 28, 100 55
+                 C 105 28, 140 20, 165 45
+                 C 190 70, 180 110, 100 170 Z"/>
+      </svg>
+    </div>
+
+    <div class="progress"><span id="pct">0</span>%</div>
+    <div class="hint">Cada clic sube el %, si no clickeas se vacía 💔</div>
+
+    <div class="couple" id="couple">
+      <div class="half left" id="leftHalf">
+        <img id="imgLeft" alt="Batman"
+             src="https://raw.githubusercontent.com/Angel-air172/kitty/refs/heads/main/img/batman.jpg">
+      </div>
+      <div class="half right" id="rightHalf">
+        <img id="imgRight" alt="Hello Kitty"
+             src="https://raw.githubusercontent.com/Angel-air172/kitty/refs/heads/main/img/kitty.jpg">
+      </div>
+      <div class="join-line" id="joinLine"></div>
+    </div>
+
+    <!-- Pop-up romántico -->
+    <div class="popup" id="popup">
+      <img src="https://raw.githubusercontent.com/Angel-air172/kitty/refs/heads/main/img/los%20dos.jpg" alt="Corazón">
+      <p> Amor bien hecho estamos juntos de nuevo💖</p>
+      <button class="btn" id="popupSongBtn">te dedico esta cancion</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const step = 2;              
+  let progress = 0;            
+  const pct = document.getElementById('pct');
+  const fillRect = document.getElementById('fillRect');
+  const heartBtn = document.getElementById('heartBtn');
+  const leftHalf = document.getElementById('leftHalf');
+  const rightHalf = document.getElementById('rightHalf');
+  const joinLine = document.getElementById('joinLine');
+  const card = document.getElementById('card');
+  const popup = document.getElementById('popup');
+  const popupSongBtn = document.getElementById('popupSongBtn');
+
+  const SONG_URL = "https://open.spotify.com/intl-es/track/5OpHUq6Fo1qaUhU3imV6TK?si=806306e4742b48f4"; // tu canción
+
+  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+  function setProgress(p){
+    progress = clamp(p,0,100);
+    const scaleY = progress / 100;
+    fillRect.style.transform = `scaleY(${scaleY})`;
+    pct.textContent = progress.toFixed(0);
+
+    const move = (1 - scaleY) * 40;
+    leftHalf.style.transform = `translateX(-${move}%)`;
+    rightHalf.style.transform = `translateX(${move}%)`;
+
+    joinLine.style.height = (scaleY * 50) + "px";
+
+    if(progress >= 100){
+      card.classList.add('complete');
+      popup.classList.add('show');    // mostramos el pop-up
+      clearInterval(autoDecrease);    // detenemos la disminución automática
+    }
+  }
+
+  function bump(){ 
+    if(progress < 100){
+      setProgress(progress + step); 
+    }
+  }
+  heartBtn.addEventListener('click', bump);
+
+  let pressTimer=null;
+  heartBtn.addEventListener('touchstart', function(){
+    pressTimer = setInterval(bump, 220);
+  }, {passive:true});
+  heartBtn.addEventListener('touchend', function(){
+    clearInterval(pressTimer);
+  });
+
+  let autoDecrease = setInterval(() => {
+    if(progress > 0 && progress < 100){
+      setProgress(progress - 1);
+    }
+  }, 400);
+
+  popupSongBtn.addEventListener('click', function(){
+    if(SONG_URL && SONG_URL.length>10){ window.open(SONG_URL, '_blank'); }
+  });
+
+  setProgress(0);
+})();
+</script>
+</body>
+</html>
